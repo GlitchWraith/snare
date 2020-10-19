@@ -26,8 +26,8 @@ class HtmlHandler():
                     self.logger.error('Error getting dorks: %s', e)
                 finally:
                     await r.release()
-        except asyncio.TimeoutError:
-            self.logger.info('Dorks timeout')
+        except asyncio.TimeoutError as error:
+            self.logger.error('Dorks timeout error: %s', error)
         return dorks['response']['dorks'] if dorks else []
 
     async def handle_content(self, content):
@@ -51,9 +51,7 @@ class HtmlHandler():
                             'a',
                             href=self.dorks.pop(),
                             style='color:{color};text-decoration:none;cursor:text;'.format(
-                                color=css.color if css and 'color' in css.keys() else '#000000'
-                            )
-                        )
+                                color=css.color if css and 'color' in css.keys() else '#000000'))
                         a_tag.string = word
                         p_new.append(a_tag)
                     else:

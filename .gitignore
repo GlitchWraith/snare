@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *$py.class
 .coverage
@@ -11,3 +12,7 @@ docs/_build/
 .idea/
 .venv
 .vscode
+
+Snare.egg-info/
+build/
+dist/
