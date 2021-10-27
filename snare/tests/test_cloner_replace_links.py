@@ -12,11 +12,11 @@ class TestReplaceLinks(unittest.TestCase):
     def setUp(self):
         self.main_page_path = generate_unique_path()
         os.makedirs(self.main_page_path)
-        self.root = 'http://example.com'
+        self.root = "http://example.com"
         self.level = 0
         self.max_depth = sys.maxsize
         self.loop = asyncio.new_event_loop()
-        self.css_validate = 'false'
+        self.css_validate = "false"
         self.handler = Cloner(self.root, self.max_depth, self.css_validate)
         self.content = None
         self.expected_content = None
@@ -24,7 +24,7 @@ class TestReplaceLinks(unittest.TestCase):
 
     def test_replace_relative_links(self):
         self.handler.process_link = AsyncMock(return_value="/test")
-        self.root = 'http://example.com/test'
+        self.root = "http://example.com/test"
         self.content = '\n<html>\n<body>\n<a href="http://example.com/test"></a>\n</body>\n</html>\n'
 
         self.expected_content = '\n<html>\n<body>\n<a href="/test"></a>\n</body>\n</html>\n'
@@ -34,8 +34,7 @@ class TestReplaceLinks(unittest.TestCase):
 
         self.loop.run_until_complete(test())
         self.assertEqual(str(self.return_content), self.expected_content)
-        self.handler.process_link.assert_called_with(
-            self.root, self.level, check_host=True)
+        self.handler.process_link.assert_called_with(self.root, self.level, check_host=True)
 
     def test_replace_image_links(self):
         self.handler.process_link = AsyncMock(return_value="/smiley.png")
@@ -64,6 +63,23 @@ class TestReplaceLinks(unittest.TestCase):
         self.loop.run_until_complete(test())
         self.assertEqual(str(self.return_content), self.expected_content)
         self.handler.process_link.assert_called_with(self.root, self.level)
+
+    def test_replace_redirects(self):
+        self.root = "http://example.com"
+        self.content = (
+            '\n<html>\n<body>\n<p name="redirect" value="http://example.com/home.html">Redirecting...</p>\n'
+            "</body>\n</html>\n"
+        )
+
+        self.expected_content = (
+            '\n<html>\n<body>\n<p name="redirect" value="/home.html">Redirecting...</p>\n</body>\n' "</html>\n"
+        )
+
+        async def test():
+            self.return_content = await self.handler.replace_links(self.content, self.level)
+
+        self.loop.run_until_complete(test())
+        self.assertEqual(str(self.return_content), self.expected_content)
 
     def tearDown(self):
         shutil.rmtree(self.main_page_path)
